@@ -54,7 +54,7 @@ class _WebPaymentState extends State<WebPayment> {
           context,
           MaterialPageRoute(
               builder: (context) =>
-                  SuccessTransactionPage(bookmaker: widget.transaction.bookmaker)),
+                  SuccessTransactionPage(bookmaker: widget.transaction.bookmaker!)),
           (Route<dynamic> route) => false,
         );
       } else if (mounted) {

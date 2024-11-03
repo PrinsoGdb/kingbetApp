@@ -44,6 +44,7 @@ class _WithdrawalAndDepositPageState extends State<WithdrawalAndDepositPage> {
   List<Caisse> caisses = [];
 
   bool _isSubmitting = false;
+  bool isLoading= true;
 
   String? numeroReccepteurError;
   String? nomReccepteurError;
@@ -57,6 +58,7 @@ class _WithdrawalAndDepositPageState extends State<WithdrawalAndDepositPage> {
 
   String? transactionUrl;
   int? transactionId;
+
 
   // Creates a global key to identify the form
   final _withdrawFormKey = GlobalKey<FormState>();
@@ -149,12 +151,13 @@ class _WithdrawalAndDepositPageState extends State<WithdrawalAndDepositPage> {
     }
   }
 
-  void _setCurrentSection(String sectionName) {
+  void _setCurrentSection(String sectionName) async {
     setState(() {
       currentSection = sectionName;
     });
 
     if (sectionName == 'historical') {
+      await Future.delayed(const Duration(seconds: 3));
       loadHistorical();
     }
   }
@@ -176,6 +179,7 @@ class _WithdrawalAndDepositPageState extends State<WithdrawalAndDepositPage> {
         await TransactionService.myOperations(widget.bookmaker);
     setState(() {
       transactions = fetchedTransaction;
+      isLoading = false;
     });
   }
 
@@ -503,7 +507,7 @@ class _WithdrawalAndDepositPageState extends State<WithdrawalAndDepositPage> {
                   ? withdrawSection(context)
                   : currentSection == "deposit"
                       ? depositSection(context)
-                      : Historical(transactions: transactions),
+                      : Historical(transactions: transactions, isLoading: isLoading),
             ),
           ),
         ],

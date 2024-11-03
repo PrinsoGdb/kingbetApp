@@ -230,6 +230,7 @@ class _MyHomePageState extends State<MyHomePage> {
               ),
             ),
             centerTitle: false,
+            leading: null,
             actions: [
               CustomPopupMenu(
                 onItemSelected: (value) {

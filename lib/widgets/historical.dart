@@ -12,11 +12,13 @@ import 'package:flutter/material.dart'
 
 import 'package:flutter/widgets.dart';
 import 'package:king_bet/models/transaction.dart';
+import 'package:shimmer/shimmer.dart';
 import 'package:king_bet/utilities/color.dart';
 
 class Historical extends StatefulWidget {
   final List<Transaction> transactions;
-  const Historical({super.key, required this.transactions});
+  final bool isLoading;
+  const Historical({super.key, required this.transactions, required this.isLoading});
 
   @override
   State<Historical> createState() => _HistoricalState();
@@ -49,6 +51,173 @@ class _HistoricalState extends State<Historical> {
     return statusColor;
   }
 
+  Widget _buildSkeleton() {
+    return Card(
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.all(Radius.circular(8.0)),
+    ),
+    margin: const EdgeInsets.only(bottom: 10.0),
+    color: Colors.white,
+    child: Padding(
+      padding: const EdgeInsets.all(10.0),
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Shimmer.fromColors(
+                baseColor: AppColor.grayColor,
+                highlightColor: Colors.grey[100]!,
+                child: Container(
+                  width: 100,
+                  height: 12,
+                  color: Colors.white,
+                ),
+              ),
+              Shimmer.fromColors(
+                baseColor: AppColor.grayColor,
+                highlightColor: Colors.grey[100]!,
+                child: Container(
+                  width: 60,
+                  height: 12,
+                  color: Colors.white,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 15.0),
+          Row(
+            children: [
+              Container(
+                decoration: BoxDecoration(
+                  color: const Color.fromRGBO(80, 80, 80, 1),
+                  borderRadius: BorderRadius.circular(100),
+                ),
+                margin: const EdgeInsets.only(right: 10.0),
+                height: 80,
+                width: 8,
+              ),
+              Expanded(
+                flex: 2,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(vertical: 5.0),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.max,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Shimmer.fromColors(
+                                baseColor: AppColor.grayColor
+              ,
+                                highlightColor: Colors.grey[100]!,
+                                child: SizedBox(
+                                  height: 10,
+                                  width: 100,
+                                  child: Container(color: Colors.white),
+                                ),
+                              ),
+                              SizedBox(height: 2),
+                              Shimmer.fromColors(
+                                baseColor: AppColor.grayColor
+              ,
+                                highlightColor: Colors.grey[100]!,
+                                child: SizedBox(
+                                  height: 10,
+                                  width: 100,
+                                  child: Container(color: Colors.white),
+                                ),
+                              ),
+                              SizedBox(height: 2),
+                              Shimmer.fromColors(
+                                baseColor: AppColor.grayColor
+              ,
+                                highlightColor: Colors.grey[100]!,
+                                child: SizedBox(
+                                  height: 10,
+                                  width: 100,
+                                  child: Container(color: Colors.white),
+                                ),
+                              ),
+                              SizedBox(height: 2),
+                              Shimmer.fromColors(
+                                baseColor: AppColor.grayColor
+              ,
+                                highlightColor: Colors.grey[100]!,
+                                child: SizedBox(
+                                  height: 10,
+                                  width: 100,
+                                  child: Container(color: Colors.white),
+                                ),
+                              ),
+                              SizedBox(height: 2),
+                            ],
+                          ),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              Shimmer.fromColors(
+                                baseColor: AppColor.grayColor
+              ,
+                                highlightColor: Colors.grey[100]!,
+                                child: SizedBox(
+                                  height: 10,
+                                  width: 80,
+                                  child: Container(color: Colors.white),
+                                ),
+                              ),
+                              const SizedBox(height: 2),
+                              Shimmer.fromColors(
+                                baseColor: AppColor.grayColor
+              ,
+                                highlightColor: Colors.grey[100]!,
+                                child: SizedBox(
+                                  height: 10,
+                                  width: 80,
+                                  child: Container(color: Colors.white),
+                                ),
+                              ),
+                              const SizedBox(height: 2),
+                              Shimmer.fromColors(
+                                baseColor: AppColor.grayColor
+              ,
+                                highlightColor: Colors.grey[100]!,
+                                child: SizedBox(
+                                  height: 10,
+                                  width: 80,
+                                  child: Container(color: Colors.white),
+                                ),
+                              ),
+                              const SizedBox(height: 2),
+                              Shimmer.fromColors(
+                                baseColor: AppColor.grayColor
+              ,
+                                highlightColor: Colors.grey[100]!,
+                                child: SizedBox(
+                                  height: 10,
+                                  width: 80,
+                                  child: Container(color: Colors.white),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              )
+            ],
+          )
+        ],
+      ),
+    ),
+  );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Column(children: [
@@ -66,7 +235,7 @@ class _HistoricalState extends State<Historical> {
       ),
       Container(
           margin: const EdgeInsets.only(top: 20, left: 10.0, right: 10.0),
-          child: Column(
+          child: widget.isLoading ? _buildSkeleton() : Column(
             children: List.generate(
                 widget.transactions.length,
                 (int index) => Card(
@@ -87,13 +256,13 @@ class _HistoricalState extends State<Historical> {
                               RichText(
                                 text: TextSpan(
                                   children: [
-                                    TextSpan(
-                                      style: const TextStyle(
-                                        fontSize: 12,
-                                        color: Colors.black,
-                                      ),
-                                      text: '${widget.transactions[index].createdAt}',
-                                    ),
+                                    // TextSpan(
+                                    //   style: const TextStyle(
+                                    //     fontSize: 12,
+                                    //     color: Colors.black,
+                                    //   ),
+                                    //   text: '${widget.transactions[index].createdAt}',
+                                    // ),
                                     TextSpan(
                                       text:
                                           '(${_getOperationStatusName(widget.transactions[index].statutOperation)})',
@@ -152,16 +321,16 @@ class _HistoricalState extends State<Historical> {
                                                     fontSize: 10,
                                                   ),
                                                 ),
-                                                SizedBox(
-                                                  height: 2,
-                                                ),
-                                                Text(
-                                                  "Référence : ",
-                                                  style: TextStyle(
-                                                    color: Colors.black,
-                                                    fontSize: 10,
-                                                  ),
-                                                ),
+                                                // SizedBox(
+                                                //   height: 2,
+                                                // ),
+                                                // Text(
+                                                //   "Référence : ",
+                                                //   style: TextStyle(
+                                                //     color: Colors.black,
+                                                //     fontSize: 10,
+                                                //   ),
+                                                // ),
                                                 SizedBox(
                                                   height: 2,
                                                 ),
@@ -202,22 +371,22 @@ class _HistoricalState extends State<Historical> {
                                                   CrossAxisAlignment.end,
                                               children: [
                                                 Text(
-                                                  widget.transactions[index].typeOperation,
+                                                  widget.transactions[index].typeOperation!,
                                                   style: const TextStyle(
                                                     color: Colors.black,
                                                     fontSize: 10,
                                                   ),
                                                 ),
-                                                const SizedBox(
-                                                  height: 2,
-                                                ),
-                                                Text(
-                                                  widget.transactions[index].transId!,
-                                                  style: const TextStyle(
-                                                    color: Colors.black,
-                                                    fontSize: 10,
-                                                  ),
-                                                ),
+                                                // const SizedBox(
+                                                //   height: 2,
+                                                // ),
+                                                // Text(
+                                                //   widget.transactions[index].transId!,
+                                                //   style: const TextStyle(
+                                                //     color: Colors.black,
+                                                //     fontSize: 10,
+                                                //   ),
+                                                // ),
                                                 const SizedBox(
                                                   height: 2,
                                                 ),

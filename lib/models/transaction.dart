@@ -1,8 +1,8 @@
 // transaction.dart
 class Transaction {
-  final String? agentId;
-  final String? clientId;
-  final String typeOperation;
+  final int? agentId;
+  final int? clientId;
+  final String? typeOperation;
   final int montantOperation;
   final String? moyenPaiement;
   final String? statutOperation;
@@ -12,7 +12,7 @@ class Transaction {
   final String? codeId;
   final String? numeroReccepteur;
   final String? nomReccepteur;
-  final String bookmaker;
+  final String? bookmaker;
   final String? lieuRetrait;
   final String? createdAt;
 
@@ -30,7 +30,7 @@ class Transaction {
     this.codeId,
     this.numeroReccepteur,
     this.nomReccepteur,
-    required this.bookmaker,
+    this.bookmaker,
     this.createdAt,
   });
 
@@ -60,18 +60,18 @@ class Transaction {
       agentId: json['agent_id'],
       clientId: json['client_id'],
       typeOperation: json['type_operation'],
-      montantOperation: int.parse(json['montant_operation']),
-      moyenPaiement: json['moyen_paiement'],
-      statutOperation: json['statut_operation'],
-      xbetId: json['xbet_id'],
-      transId: json['trans_id'],
-      retraitId: json['retrait_id'],
+      montantOperation: int.parse(json['montant']),
+      // moyenPaiement: json['moyen_paiement'],
+      statutOperation: json['statut'],
+      // xbetId: json['xbet_id'],
+      // transId: json['trans_id'],
+      // retraitId: json['retrait_id'],
       codeId: json['code_id'],
-      numeroReccepteur: json['numero_reccepteur'],
-      lieuRetrait: json['lieu_retrait'],
-      nomReccepteur: json['nom_reccepteur'],
+      numeroReccepteur: json['client']['tel_client'],
+      lieuRetrait: json['agent']['caisse'],
+      nomReccepteur: json['client']['nom_prenoms_client'],
       bookmaker: json['bookmaker'],
-      createdAt: json['created_at'],
+      createdAt: json['date'],
     );
   }
 }
