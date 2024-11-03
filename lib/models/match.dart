@@ -5,6 +5,7 @@ class Match {
   final String awayLogo;
   final String matchDate;
   final String leagueName;
+  final int leagueId;
 
   Match({
     required this.homeTeam,
@@ -13,6 +14,7 @@ class Match {
     required this.awayLogo,
     required this.matchDate,
     required this.leagueName,
+    required this.leagueId,
   });
 
   // Factory method to create a Match object from JSON data
@@ -24,6 +26,7 @@ class Match {
       awayLogo: json['teams']['away']['logo'],
       matchDate: DateTime.parse(json['fixture']['date']).toLocal().toString(),
       leagueName: json['league']['name'],
+      leagueId: json['league']['id'],
     );
   }
 
@@ -35,7 +38,7 @@ class Match {
         'away': {'name': awayTeam, 'logo': awayLogo},
       },
       'fixture': {'date': matchDate},
-      'league': {'name': leagueName},
+      'league': {'name': leagueName, 'id': leagueId},
     };
   }
 }

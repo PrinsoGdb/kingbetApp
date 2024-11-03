@@ -4,6 +4,8 @@ import 'package:king_bet/models/match.dart';
 import 'package:king_bet/services/match.dart';
 import 'package:king_bet/services/user.dart';
 import 'package:king_bet/views/login.dart';
+import 'package:king_bet/widgets/home_match_skeleton.dart';
+import 'package:king_bet/widgets/home_news_skeleton.dart';
 import 'widgets/bottom_navigation_bar.dart';
 import 'utilities/color.dart';
 import 'widgets/home_banner_slider.dart';
@@ -22,6 +24,7 @@ import 'dart:developer' as developer;
 import 'package:url_launcher/url_launcher.dart';
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
   runApp(const MyApp());
 }
 
@@ -90,6 +93,8 @@ class _MyHomePageState extends State<MyHomePage> {
       homeBookmakerSlideCurrentPage = 0,
       homeNewsSlideCurrentPage = 0;
 
+  bool isLoading = true;
+
   @override
   void initState() {
     super.initState();
@@ -128,8 +133,12 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void loadData() async {
+    await Future.delayed(const Duration(seconds: 3));
     await loadNews();
     await loadMatchs();
+    setState(() {
+      isLoading = false;
+    });
   }
 
   Future<void> loadNews() async {
@@ -250,7 +259,7 @@ class _MyHomePageState extends State<MyHomePage> {
             child: Column(
               children: [
                 const SizedBox(height: 10.0),
-                HomeMatchSlider(height: height, width: width, matchs: matches)
+                isLoading ? HomeMatchSliderSkeleton(): HomeMatchSlider(height: height, width: width, matchs: matches)
               ],
             ),
           ),
@@ -310,7 +319,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 ),
                 Container(
                   margin: const EdgeInsets.only(left: 10.0, right: 10.0),
-                  child: HomeNewsSlider(
+                  child: isLoading ? HomeNewsSliderSkeleton() : HomeNewsSlider(
                       height: height,
                       onSeeMoreLinkTaped: _onSeeMoreLinkTaped,
                       news: news),

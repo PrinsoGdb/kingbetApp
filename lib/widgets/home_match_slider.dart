@@ -7,7 +7,6 @@ import 'package:flutter/material.dart'
         Alignment,
         TextAlign,
         MainAxisSize,
-        Colors,
         Builder,
         Row,
         MainAxisAlignment,

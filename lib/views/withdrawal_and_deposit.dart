@@ -23,6 +23,7 @@ import 'success_transaction.dart';
 import 'dart:developer' as developer;
 
 import 'package:feda/feda.dart';
+import 'dart:convert';
 
 class WithdrawalAndDepositPage extends StatefulWidget {
   final String bookmaker;
@@ -53,7 +54,9 @@ class _WithdrawalAndDepositPageState extends State<WithdrawalAndDepositPage> {
 
   String? currentMoyenPaiment;
   String? currentLieuRetrait;
-  String? paymentLink;
+
+  String? transactionUrl;
+  int? transactionId;
 
   // Creates a global key to identify the form
   final _withdrawFormKey = GlobalKey<FormState>();
@@ -66,6 +69,8 @@ class _WithdrawalAndDepositPageState extends State<WithdrawalAndDepositPage> {
   final TextEditingController _montantOperationController =
       TextEditingController();
   final TextEditingController _codeIdController = TextEditingController();
+  final TextEditingController _transactionIdController =
+      TextEditingController();
 
   @override
   void initState() {
@@ -85,69 +90,43 @@ class _WithdrawalAndDepositPageState extends State<WithdrawalAndDepositPage> {
     });
   }
 
-  // Future<String> createRedirectTransaction(email, phoneNumber) async {
-  //   return await Feda.create_transaction(
-  //     FedaTransactionRequest(
-  //         amount: 500,
-  //         clienMail: "damiendoevi@gmail.com",
-  //         description: "Operation de depot sur KingBet",
-  //         phone_number: {
-  //           'number': "66000001",
-  //           'country': 'bj',
-  //         }),
-  //   );
-  // }
-
-  // createRedirectTransaction() async {
-  //   return await Feda.create_transaction(
-  //           FedaTransactionRequest(
-  //         amount: 500,
-  //         clienMail: "damiendoevi@gmail.com",
-  //         description: "Operation de depot sur KingBet",
-  //         phone_number: {
-  //           'number': "66000001",
-  //           'country': 'bj',
-  //         }),
-  //   );
-  // }
-
-Future<void> createRedirectTransaction() async {
-  try {
-    final response = await Feda.create_transaction(
-      FedaTransactionRequest(
-        amount: 500,
-        clienMail: "damien@gmail.com",
-        description: "Operation de depot sur KingBet",
-        phone_number: {
-          'number': "66000001",
-          'country': 'bj',
-        },
-      ),
-      redirect: false,
-      reseau: 'mtn',
-    );
-
-    // Afficher la réponse
-    developer.log('Réponse de la transaction: $response');
-
-    // Vérifiez le type de la réponse
-    if (response is String) {
-      developer.log('URL de redirection: $response'); // Si c'est déjà une chaîne
-    } else {
-      developer.log('Contenu de la réponse: ${response.toString()}'); // Pour les autres types
+  Future<void> createRedirectTransaction(amount, email, phoneNumber) async {
+    try {
+      final data = await Feda.create_transaction(
+        FedaTransactionRequest(
+          amount: double.parse(amount),
+          clienMail: email,
+          description: "Operation de depot sur KingBet",
+          phone_number: {
+            'number': phoneNumber,
+            'country': 'bj',
+          },
+        ),
+      );
+      setState(() {
+        transactionId = data['trx'].id;
+        transactionUrl = data['url'];
+      });
+    } catch (e) {
+      developer.log('Erreur lors de la création de la transaction: $e');
     }
-  } catch (e) {
-    developer.log('Erreur lors de la création de la transaction: $e');
   }
-}
 
+  void _redirectToPayment(transactionUrl, transactionId) {
+    final transaction = Transaction(
+          xbetId: _xbetIdController.text,
+          montantOperation: int.parse(_montantOperationController.text),
+          typeOperation: "Dépôt",
+          bookmaker: widget.bookmaker,
+          transId: transactionId.toString());
 
-  void _redirectToPayment(url) {
     Navigator.push(
       context,
       MaterialPageRoute(
           builder: (context) => WebPayment(
-                paymentLink: url,
+                transactionUrl: transactionUrl,
+                transactionId: transactionId,
+                transaction: transaction,
               )),
     );
   }
@@ -178,10 +157,6 @@ Future<void> createRedirectTransaction() async {
     if (sectionName == 'historical') {
       loadHistorical();
     }
-
-    // if(sectionName == 'withdraw') {
-    //   loadMyProfile();
-    // }
   }
 
   void _onMoyenPaiementChanged(String? newValue) {
@@ -246,56 +221,7 @@ Future<void> createRedirectTransaction() async {
           (Route<dynamic> route) => false,
         );
       } else if (mounted) {
-        developer.log(response.body);
-      }
-    } catch (error) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-                'Une erreur s\'est produite. Veuillez réessayer plus tard.'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-    } finally {
-      if (mounted) {
-        // Hide the loading indicator
-        setState(() {
-          _isSubmitting = false;
-        });
-      }
-    }
-  }
-
-  Future<void> _onStartDeposit() async {
-    setState(() {
-      _isSubmitting = true;
-      xbetIdError = null;
-      montantOperationError = null;
-    });
-
-    try {
-      final transaction = Transaction(
-        xbetId: _xbetIdController.text,
-        montantOperation: int.parse(_montantOperationController.text),
-        typeOperation: "Dépôt",
-        bookmaker: widget.bookmaker,
-      );
-
-      // Make the registration API call
-      final response = await TransactionService.makeOperation(transaction);
-
-      if ((response.statusCode == 200) && mounted) {
-        Navigator.pushAndRemoveUntil(
-          context,
-          MaterialPageRoute(
-              builder: (context) =>
-                  SuccessTransactionPage(bookmaker: widget.bookmaker)),
-          (Route<dynamic> route) => false,
-        );
-      } else if (mounted) {
-        developer.log(response.body);
+        //
       }
     } catch (error) {
       if (mounted) {
@@ -335,9 +261,22 @@ Future<void> createRedirectTransaction() async {
 
   void _managePayment() async {
     try {
-     await createRedirectTransaction();
+      setState(() {
+        _isSubmitting = true;
+      });
+      if (transactionUrl == null) {
+        await createRedirectTransaction(_montantOperationController.text,
+            currentUser!.email, currentUser!.telUser);
+        _redirectToPayment(transactionUrl, transactionId);
+      } else {
+        _redirectToPayment(transactionUrl, transactionId);
+      }
     } catch (e) {
       developer.log("Errorrrr$e");
+    } finally {
+      setState(() {
+        _isSubmitting = false;
+      });
     }
   }
 

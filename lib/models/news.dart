@@ -14,7 +14,7 @@ class News {
   // Factory method to create a News object from JSON data
   factory News.fromJson(Map<String, dynamic> json) {
     return News(
-      content: json['content'],
+      content: json['description'],
       title: json['title'],
       imageUrl: json['image'] ?? 'https://via.placeholder.com/150',
       publishedAt: DateTime.parse(json['publishedAt']).toLocal().toString(),
@@ -24,7 +24,7 @@ class News {
   // Method to convert a News object to JSON format
   Map<String, dynamic> toJson() {
     return {
-      'content': content,
+      'description': content,
       'title': title,
       'image': imageUrl,
       'publishedAt': publishedAt,

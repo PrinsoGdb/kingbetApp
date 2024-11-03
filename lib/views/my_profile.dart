@@ -3,6 +3,7 @@ import 'package:king_bet/main.dart';
 import 'package:king_bet/models/user.dart';
 import 'package:king_bet/views/all_news.dart';
 import 'package:king_bet/views/login.dart';
+import 'package:king_bet/widgets/my_profile_form_skeleton.dart';
 import '../utilities/color.dart';
 import '../widgets/bottom_navigation_bar.dart';
 import '../widgets/text_field.dart';
@@ -27,15 +28,25 @@ class _MyProfileState extends State<MyProfile> {
   bool updateButtonIsClicked = false;
   bool _isSubmitting = false;
   bool obscureText = true;
+  bool isLoading = true;
   User? currentUser;
 
   String? passwordError;
   String? emailError;
 
+
   @override
   void initState() {
     super.initState();
-    loadMyProfile();
+    loadData();
+  }
+
+  void loadData() async {
+    await Future.delayed(const Duration(seconds: 2));
+    await loadMyProfile();
+    setState(() {
+      isLoading = false;
+    });
   }
 
   Future<void> loadMyProfile() async {
@@ -46,7 +57,7 @@ class _MyProfileState extends State<MyProfile> {
     });
   }
 
-  void _setCurrentUser() {
+  void _setCurrentUser() async{
       _nameController.text = currentUser!.name;
       _emailController.text = currentUser!.email;
       _telUserController.text = removeCountryCode(currentUser!.telUser);
@@ -310,7 +321,7 @@ class _MyProfileState extends State<MyProfile> {
                         ),
                       ],
                     ),
-                    child: Form(
+                    child: isLoading ? ProfileFormSkeleton() : Form(
                       key: _profileFormKey,
                       child: Column(
                         children: [

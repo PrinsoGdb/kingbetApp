@@ -5,6 +5,29 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:developer' as developer;
 import '../models/match.dart';
 
+class Competition {
+  static const List<int> importantCompetitions = [
+    2,    // Ligue des Champions UEFA
+    39,   // Premier League
+    140,  // La Liga
+    78,   // Bundesliga
+    135,  // Serie A
+    61,   // Ligue 1
+    88,   // Eredivisie
+    2016, // Copa América
+    1,    // Coupe du Monde FIFA
+    220,  // Euro
+    400,  // CAN
+    19,   // MLS
+    193,  // Saudi Professional League
+    27,   // FA Cup
+    73,   // Coupe du Roi
+    70,   // Supercoupe d'Espagne
+    51,   // Coupe d'Italie
+    25,   // Super League (Turquie)
+  ];
+}
+
 class MatchService {
   static final String apiKey = '45c83592e7f04467191a0e8ce02ac7a7';
   static String todayDate = DateFormat('yyyy-MM-dd').format(DateTime.now());
@@ -78,6 +101,8 @@ class MatchService {
           // Convert the API response into a list of Match objects
           List<Match> matches =
               fixtures.map((json) => Match.fromJson(json)).toList();
+          
+          //  List<Match> matches = fixtures.map((json) => Match.fromJson(json)).where((match) => Competition.importantCompetitions.contains(match.leagueId)).toList();
 
           // Cache the important matches
           await _setCachedMatches(matches);
