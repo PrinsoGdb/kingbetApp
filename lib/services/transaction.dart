@@ -51,8 +51,6 @@ class TransactionService {
         },
       );
 
-      developer.log(response.body.toString());
-
       if (response.statusCode == 200) {
         final List<dynamic> data = jsonDecode(response.body);
         return data

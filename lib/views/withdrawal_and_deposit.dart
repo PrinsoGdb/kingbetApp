@@ -44,7 +44,7 @@ class _WithdrawalAndDepositPageState extends State<WithdrawalAndDepositPage> {
   List<Caisse> caisses = [];
 
   bool _isSubmitting = false;
-  bool isLoading= true;
+  bool isLoading = true;
 
   String? numeroReccepteurError;
   String? nomReccepteurError;
@@ -58,7 +58,6 @@ class _WithdrawalAndDepositPageState extends State<WithdrawalAndDepositPage> {
 
   String? transactionUrl;
   int? transactionId;
-
 
   // Creates a global key to identify the form
   final _withdrawFormKey = GlobalKey<FormState>();
@@ -74,6 +73,8 @@ class _WithdrawalAndDepositPageState extends State<WithdrawalAndDepositPage> {
   final TextEditingController _transactionIdController =
       TextEditingController();
 
+  
+
   @override
   void initState() {
     super.initState();
@@ -85,11 +86,26 @@ class _WithdrawalAndDepositPageState extends State<WithdrawalAndDepositPage> {
     loadMyProfile();
   }
 
+  void formatInput() {
+    if(mounted) {
+      setState(() {
+        _numeroReccepteurController.text = "";
+        _nomReccepteurController.text = "";
+        _xbetIdController.text = "";
+        _montantOperationController.text = "";
+        _codeIdController.text = "";
+        _transactionIdController.text = "";
+      });
+    }
+  }
+
   Future<void> loadMyProfile() async {
     User? fetchedUser = await UserService.getMyProfil();
-    setState(() {
-      currentUser = fetchedUser;
-    });
+    if (mounted) {
+      setState(() {
+        currentUser = fetchedUser;
+      });
+    }
   }
 
   Future<void> createRedirectTransaction(amount, email, phoneNumber) async {
@@ -116,11 +132,11 @@ class _WithdrawalAndDepositPageState extends State<WithdrawalAndDepositPage> {
 
   void _redirectToPayment(transactionUrl, transactionId) {
     final transaction = Transaction(
-          xbetId: _xbetIdController.text,
-          montantOperation: int.parse(_montantOperationController.text),
-          typeOperation: "Dépôt",
-          bookmaker: widget.bookmaker,
-          transId: transactionId.toString());
+        xbetId: _xbetIdController.text,
+        montantOperation: int.parse(_montantOperationController.text),
+        typeOperation: "Depot",
+        bookmaker: widget.bookmaker,
+        transId: transactionId.toString());
 
     Navigator.push(
       context,
@@ -152,9 +168,11 @@ class _WithdrawalAndDepositPageState extends State<WithdrawalAndDepositPage> {
   }
 
   void _setCurrentSection(String sectionName) async {
-    setState(() {
-      currentSection = sectionName;
-    });
+    if (mounted) {
+      setState(() {
+        currentSection = sectionName;
+      });
+    }
 
     if (sectionName == 'historical') {
       await Future.delayed(const Duration(seconds: 3));
@@ -185,9 +203,11 @@ class _WithdrawalAndDepositPageState extends State<WithdrawalAndDepositPage> {
 
   Future<void> loadCaisse() async {
     List<Caisse> fetchedCaisse = await CaisseService.listOfCaisse();
-    setState(() {
-      caisses = fetchedCaisse;
-    });
+    if (mounted) {
+      setState(() {
+        caisses = fetchedCaisse;
+      });
+    }
   }
 
   Future<void> _onStartWithdrawal() async {
@@ -215,6 +235,8 @@ class _WithdrawalAndDepositPageState extends State<WithdrawalAndDepositPage> {
 
       // Make the registration API call
       final response = await TransactionService.makeOperation(transaction);
+
+      formatInput();
 
       if ((response.statusCode == 200) && mounted) {
         Navigator.pushAndRemoveUntil(
@@ -271,8 +293,10 @@ class _WithdrawalAndDepositPageState extends State<WithdrawalAndDepositPage> {
       if (transactionUrl == null) {
         await createRedirectTransaction(_montantOperationController.text,
             currentUser!.email, currentUser!.telUser);
+        formatInput();
         _redirectToPayment(transactionUrl, transactionId);
       } else {
+        formatInput();
         _redirectToPayment(transactionUrl, transactionId);
       }
     } catch (e) {
@@ -321,7 +345,9 @@ class _WithdrawalAndDepositPageState extends State<WithdrawalAndDepositPage> {
             ),
             leading: IconButton(
               onPressed: () {
-                Navigator.pop(context);
+                if (mounted) {
+                  Navigator.pop(context);
+                }
               },
               icon: Icon(
                 Icons.arrow_back_ios,
@@ -507,7 +533,8 @@ class _WithdrawalAndDepositPageState extends State<WithdrawalAndDepositPage> {
                   ? withdrawSection(context)
                   : currentSection == "deposit"
                       ? depositSection(context)
-                      : Historical(transactions: transactions, isLoading: isLoading),
+                      : Historical(
+                          transactions: transactions, isLoading: isLoading),
             ),
           ),
         ],
@@ -641,7 +668,7 @@ class _WithdrawalAndDepositPageState extends State<WithdrawalAndDepositPage> {
               height: 10.0,
             ),
             CustomTextField(
-              type: TextInputType.text,
+              type: TextInputType.number,
               placeholder: "Montant",
               validator: amountValidator,
               obscureText: false,

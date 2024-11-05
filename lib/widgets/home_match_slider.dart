@@ -5,7 +5,9 @@ import 'package:flutter/material.dart'
         Column,
         State,
         Alignment,
+        Center,
         TextAlign,
+        CrossAxisAlignment,
         MainAxisSize,
         Builder,
         Row,
@@ -56,7 +58,7 @@ class _HomeMatchSliderState extends State<HomeMatchSlider> {
   Widget build(BuildContext context) {
     return Column(
       children: [
-          Container(
+        Container(
           margin: const EdgeInsets.only(left: 10, right: 10),
           width: double.infinity,
           child: CarouselSlider(
@@ -102,18 +104,27 @@ class _HomeMatchSliderState extends State<HomeMatchSlider> {
                       SizedBox(
                         width: widget.width * 0.5,
                         child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            matchItems.leagueName,
-                            style: const TextStyle(
-                              fontWeight: FontWeight.bold,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            SizedBox(
+                              width: widget.width * 0.5,
+                              child: Text(
+                              matchItems.leagueName,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                              ),
+                              textAlign: TextAlign.center,
+                              softWrap: true,
                             ),
-                          ),
-                          const SizedBox(height: 4.0),
-                          Text(formatMatchDate(matchItems.matchDate)),
-                        ],
-                      ),
+                            ),
+                            const SizedBox(height: 4.0),
+                            Text(
+                              formatMatchDate(matchItems.matchDate),
+                              textAlign: TextAlign.center,
+                            ),
+                          ],
+                        ),
                       ),
                       Column(
                         mainAxisAlignment: MainAxisAlignment.center,

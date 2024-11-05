@@ -73,7 +73,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
       // Make the registration API call
       final response = await UserService.register(user);
-      
+
       if ((response.statusCode == 201) && mounted) {
         Navigator.pushReplacement(
           context,

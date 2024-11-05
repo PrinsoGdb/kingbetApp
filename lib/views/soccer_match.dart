@@ -70,7 +70,8 @@ class _SoccerMatchPageState extends State<SoccerMatchPage> {
             ),
             leading: IconButton(
             onPressed: () {
-              Navigator.pop(context);
+              if(mounted) { Navigator.pop(context);
+}
             },
             icon: Icon(
               Icons.arrow_back_ios,

@@ -1,7 +1,24 @@
+// buildscript {
+//     ext.kotlin_version = '1.9.0'
+//     repositories {
+//         google()
+//         mavenCentral()
+//     }
+//     dependencies {
+//         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+//         classpath 'com.android.tools.build:gradle:8.3'
+//     }
+// }
+
 allprojects {
+    ext.kotlin_version = '1.9.0' 
     repositories {
         google()
         mavenCentral()
+    }
+    
+    tasks.withType(JavaCompile) {
+        options.compilerArgs << '-Xlint:-options' 
     }
 }
 

@@ -34,7 +34,6 @@ class _MyProfileState extends State<MyProfile> {
   String? passwordError;
   String? emailError;
 
-
   @override
   void initState() {
     super.initState();
@@ -44,38 +43,40 @@ class _MyProfileState extends State<MyProfile> {
   void loadData() async {
     await Future.delayed(const Duration(seconds: 2));
     await loadMyProfile();
-    setState(() {
-      isLoading = false;
-    });
+    if (mounted) {
+      setState(() {
+        isLoading = false;
+      });
+    }
   }
 
   Future<void> loadMyProfile() async {
     User? fetchedUser = await UserService.getMyProfil();
-    setState(() {
-      currentUser = fetchedUser;
-      _setCurrentUser();
-    });
+    if (mounted) {
+      setState(() {
+        currentUser = fetchedUser;
+        _setCurrentUser();
+      });
+    }
   }
 
-  void _setCurrentUser() async{
-      _nameController.text = currentUser!.name;
-      _emailController.text = currentUser!.email;
-      _telUserController.text = removeCountryCode(currentUser!.telUser);
-      _passwordController.text = '';
+  void _setCurrentUser() async {
+    _nameController.text = currentUser!.name;
+    _emailController.text = currentUser!.email;
+    _telUserController.text = removeCountryCode(currentUser!.telUser);
+    _passwordController.text = '';
   }
-
 
   String removeCountryCode(String? phoneNumber) {
-  phoneNumber = phoneNumber!.trim();
+    phoneNumber = phoneNumber!.trim();
 
-  int spaceIndex = phoneNumber.indexOf(' ');
-  if (spaceIndex != -1) {
-    return phoneNumber.substring(spaceIndex + 1);
+    int spaceIndex = phoneNumber.indexOf(' ');
+    if (spaceIndex != -1) {
+      return phoneNumber.substring(spaceIndex + 1);
+    }
+
+    return phoneNumber;
   }
-
-  return phoneNumber;
-}
-
 
   void _onBottomNavigationItemTapped(int index) {
     setState(() {
@@ -97,11 +98,13 @@ class _MyProfileState extends State<MyProfile> {
 
   Future<void> _onSaveButtonPressed() async {
     try {
-      setState(() {
-        _isSubmitting = true;
-        passwordError = null;
-        emailError = null;
-      });
+      if (mounted) {
+        setState(() {
+          _isSubmitting = true;
+          passwordError = null;
+          emailError = null;
+        });
+      }
 
       User user;
 
@@ -109,7 +112,7 @@ class _MyProfileState extends State<MyProfile> {
         user = User(
             name: _nameController.text,
             email: _emailController.text,
-            telUser:  "${selectedCountry.phoneCode} ${_telUserController.text}",
+            telUser: "${selectedCountry.phoneCode} ${_telUserController.text}",
             password: _passwordController.text);
       } else {
         user = User(
@@ -121,7 +124,6 @@ class _MyProfileState extends State<MyProfile> {
       // Make the update profile API call
       final response = await UserService.updateClientProfile(user);
       final data = jsonDecode(response.body);
-
 
       developer.log(data.toString());
       developer.log(user.toJson().toString());
@@ -280,7 +282,9 @@ class _MyProfileState extends State<MyProfile> {
           ),
           leading: IconButton(
             onPressed: () {
-              Navigator.pop(context);
+              if (mounted) {
+                Navigator.pop(context);
+              }
             },
             icon: Icon(
               Icons.arrow_back_ios,
@@ -321,156 +325,162 @@ class _MyProfileState extends State<MyProfile> {
                         ),
                       ],
                     ),
-                    child: isLoading ? ProfileFormSkeleton() : Form(
-                      key: _profileFormKey,
-                      child: Column(
-                        children: [
-                          CustomTextField(
-                            readOnly: !updateButtonIsClicked,
-                            type: TextInputType.text,
-                            placeholder: "Nom et Prénoms",
-                            obscureText: false,
-                            radius: 8.0,
-                            controller: _nameController,
-                          ),
-                          const SizedBox(height: 10),
-                          CustomTextField(
-                            validationError: emailError,
-                            readOnly: !updateButtonIsClicked,
-                            type: TextInputType.emailAddress,
-                            placeholder: "Email",
-                            obscureText: false,
-                            radius: 8.0,
-                            controller: _emailController,
-                          ),
-                          const SizedBox(height: 10),
-                          CustomPhoneNumberInputField(
-                            readOnly: !updateButtonIsClicked,
-                            selectedCountry: selectedCountry,
-                            onPressed: onCountryDropdownPressed,
-                            controller: _telUserController,
-                          ),
-                          updatePasswordButtonIsClicked
-                              ? SizedBox(height: 10)
-                              : SizedBox(),
-                          updatePasswordButtonIsClicked
-                              ? CustomTextField(
-                                  validationError: passwordError,
-                                  readOnly: !(updateButtonIsClicked ||
-                                      updatePasswordButtonIsClicked),
-                                  type: TextInputType.visiblePassword,
-                                  placeholder: "Nouveau mot de passe",
-                                  obscureText: obscureText,
-                                  onPressed:
-                                      _onPasswordFieldHideOrShowButtonPressed,
+                    child: isLoading
+                        ? ProfileFormSkeleton()
+                        : Form(
+                            key: _profileFormKey,
+                            child: Column(
+                              children: [
+                                CustomTextField(
+                                  readOnly: !updateButtonIsClicked,
+                                  type: TextInputType.text,
+                                  placeholder: "Nom et Prénoms",
+                                  obscureText: false,
                                   radius: 8.0,
-                                  controller: _passwordController,
-                                )
-                              : SizedBox(),
-                          updatePasswordButtonIsClicked
-                              ? SizedBox(height: 10)
-                              : SizedBox(),
-                          updatePasswordButtonIsClicked
-                              ? CustomTextField(
-                                  readOnly: !(updateButtonIsClicked ||
-                                      updatePasswordButtonIsClicked),
-                                  type: TextInputType.visiblePassword,
-                                  placeholder: "Confirmer mot de passe",
-                                  validator: (value) {
-                                    if (value == null || value.isEmpty) {
-                                      return 'Ce champ est requis';
-                                    } else if (value !=
-                                        _passwordController.text) {
-                                      return 'Les mots de passe ne correspondent pas';
-                                    }
-                                    return null;
-                                  },
-                                  obscureText: obscureText,
-                                  onPressed:
-                                      _onPasswordFieldHideOrShowButtonPressed,
-                                  radius: 8.0,
-                                )
-                              : SizedBox(),
-                          SizedBox(
-                            height: 12,
-                          ),
-                          (updateButtonIsClicked ||
-                                  updatePasswordButtonIsClicked)
-                              ? SizedBox(
-                                  width: 0,
-                                )
-                              : Column(
-                                  children: [
-                                    IntrinsicWidth(
-                                      child: CustomElevatedButton(
-                                        withRadius: false,
-                                        label: "Modifier",
-                                        onPressed: () {
-                                          setState(() {
-                                            updateButtonIsClicked = true;
-                                          });
-                                        },
-                                      ),
-                                    ),
-                                    SizedBox(
-                                      height: 10.0,
-                                    ),
-                                    IntrinsicWidth(
-                                      child: CustomElevatedButton(
-                                        withRadius: false,
-                                        label: "Modifier mot de passe",
-                                        backgroundColor:
-                                            const Color(0xB174788d),
-                                        onPressed: () {
-                                          setState(() {
-                                            updatePasswordButtonIsClicked =
-                                                true;
-                                          });
-                                        },
-                                      ),
-                                    ),
-                                  ],
+                                  controller: _nameController,
                                 ),
-                          (updateButtonIsClicked ||
-                                  updatePasswordButtonIsClicked)
-                              ? Column(children: [
-                                  IntrinsicWidth(
-                                    child: CustomElevatedButton(
-                                      withRadius: false,
-                                      label: "Annuler",
-                                      backgroundColor: const Color(0xB1f1b44c),
-                                      onPressed: () {
-                                        setState(() {
-                                          updatePasswordButtonIsClicked = false;
-                                          updateButtonIsClicked = false;
-                                          _setCurrentUser();
-                                        });
-                                      },
-                                    ),
-                                  ),
-                                  SizedBox(
-                                      height: 10.0,
-                                    ),
-                                  IntrinsicWidth(
-                                    child: CustomElevatedButton(
-                                      withRadius: false,
-                                      label: "Enregistrer",
-                                      backgroundColor: const Color(0xB134c38f),
-                                      onPressed: _isSubmitting
-                                          ? null
-                                          : () async {
-                                              if (_profileFormKey.currentState!
-                                                  .validate()) {
-                                                await _onSaveButtonPressed();
-                                              }
+                                const SizedBox(height: 10),
+                                CustomTextField(
+                                  validationError: emailError,
+                                  readOnly: !updateButtonIsClicked,
+                                  type: TextInputType.emailAddress,
+                                  placeholder: "Email",
+                                  obscureText: false,
+                                  radius: 8.0,
+                                  controller: _emailController,
+                                ),
+                                const SizedBox(height: 10),
+                                CustomPhoneNumberInputField(
+                                  readOnly: !updateButtonIsClicked,
+                                  selectedCountry: selectedCountry,
+                                  onPressed: onCountryDropdownPressed,
+                                  controller: _telUserController,
+                                ),
+                                updatePasswordButtonIsClicked
+                                    ? SizedBox(height: 10)
+                                    : SizedBox(),
+                                updatePasswordButtonIsClicked
+                                    ? CustomTextField(
+                                        validationError: passwordError,
+                                        readOnly: !(updateButtonIsClicked ||
+                                            updatePasswordButtonIsClicked),
+                                        type: TextInputType.visiblePassword,
+                                        placeholder: "Nouveau mot de passe",
+                                        obscureText: obscureText,
+                                        onPressed:
+                                            _onPasswordFieldHideOrShowButtonPressed,
+                                        radius: 8.0,
+                                        controller: _passwordController,
+                                      )
+                                    : SizedBox(),
+                                updatePasswordButtonIsClicked
+                                    ? SizedBox(height: 10)
+                                    : SizedBox(),
+                                updatePasswordButtonIsClicked
+                                    ? CustomTextField(
+                                        readOnly: !(updateButtonIsClicked ||
+                                            updatePasswordButtonIsClicked),
+                                        type: TextInputType.visiblePassword,
+                                        placeholder: "Confirmer mot de passe",
+                                        validator: (value) {
+                                          if (value == null || value.isEmpty) {
+                                            return 'Ce champ est requis';
+                                          } else if (value !=
+                                              _passwordController.text) {
+                                            return 'Les mots de passe ne correspondent pas';
+                                          }
+                                          return null;
+                                        },
+                                        obscureText: obscureText,
+                                        onPressed:
+                                            _onPasswordFieldHideOrShowButtonPressed,
+                                        radius: 8.0,
+                                      )
+                                    : SizedBox(),
+                                SizedBox(
+                                  height: 12,
+                                ),
+                                (updateButtonIsClicked ||
+                                        updatePasswordButtonIsClicked)
+                                    ? SizedBox(
+                                        width: 0,
+                                      )
+                                    : Column(
+                                        children: [
+                                          IntrinsicWidth(
+                                            child: CustomElevatedButton(
+                                              withRadius: false,
+                                              label: "Modifier",
+                                              onPressed: () {
+                                                setState(() {
+                                                  updateButtonIsClicked = true;
+                                                });
+                                              },
+                                            ),
+                                          ),
+                                          SizedBox(
+                                            height: 10.0,
+                                          ),
+                                          IntrinsicWidth(
+                                            child: CustomElevatedButton(
+                                              withRadius: false,
+                                              label: "Modifier mot de passe",
+                                              backgroundColor:
+                                                  const Color(0xB174788d),
+                                              onPressed: () {
+                                                setState(() {
+                                                  updatePasswordButtonIsClicked =
+                                                      true;
+                                                });
+                                              },
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                (updateButtonIsClicked ||
+                                        updatePasswordButtonIsClicked)
+                                    ? Column(children: [
+                                        IntrinsicWidth(
+                                          child: CustomElevatedButton(
+                                            withRadius: false,
+                                            label: "Annuler",
+                                            backgroundColor:
+                                                const Color(0xB1f1b44c),
+                                            onPressed: () {
+                                              setState(() {
+                                                updatePasswordButtonIsClicked =
+                                                    false;
+                                                updateButtonIsClicked = false;
+                                                _setCurrentUser();
+                                              });
                                             },
-                                    ),
-                                  ),
-                                ])
-                              : SizedBox(),
-                        ],
-                      ),
-                    ))
+                                          ),
+                                        ),
+                                        SizedBox(
+                                          height: 10.0,
+                                        ),
+                                        IntrinsicWidth(
+                                          child: CustomElevatedButton(
+                                            withRadius: false,
+                                            label: "Enregistrer",
+                                            backgroundColor:
+                                                const Color(0xB134c38f),
+                                            onPressed: _isSubmitting
+                                                ? null
+                                                : () async {
+                                                    if (_profileFormKey
+                                                        .currentState!
+                                                        .validate()) {
+                                                      await _onSaveButtonPressed();
+                                                    }
+                                                  },
+                                          ),
+                                        ),
+                                      ])
+                                    : SizedBox(),
+                              ],
+                            ),
+                          ))
               ],
             ),
           ),

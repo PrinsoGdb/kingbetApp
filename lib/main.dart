@@ -4,6 +4,7 @@ import 'package:king_bet/models/match.dart';
 import 'package:king_bet/services/match.dart';
 import 'package:king_bet/services/user.dart';
 import 'package:king_bet/views/login.dart';
+import 'package:king_bet/views/splash_screen.dart';
 import 'package:king_bet/widgets/home_match_skeleton.dart';
 import 'package:king_bet/widgets/home_news_skeleton.dart';
 import 'widgets/bottom_navigation_bar.dart';
@@ -17,10 +18,8 @@ import 'views/one_news.dart';
 import 'views/all_news.dart';
 import 'views/my_profile.dart';
 import 'views/welcome.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'services/news.dart';
 import 'models/news.dart';
-import 'dart:developer' as developer;
 import 'package:url_launcher/url_launcher.dart';
 
 void main() {
@@ -36,44 +35,28 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  bool isAuthenticated = false;
-  bool isNewUser = true;
-
   @override
   void initState() {
     super.initState();
-    checkToken();
     initializeDateFormatting('fr_FR', null);
-  }
-
-  Future<void> checkToken() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? token = prefs.getString('token');
-    setState(() {
-      isAuthenticated = token != null && token.isNotEmpty;
-      isNewUser = token == null;
-    });
-
-    return;
   }
 
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        textSelectionTheme: TextSelectionThemeData(
-          cursorColor: Colors.black.withOpacity(0.5),
+        title: 'Flutter Demo',
+        theme: ThemeData(
+          textSelectionTheme: TextSelectionThemeData(
+            cursorColor: Colors.black.withOpacity(0.5),
+          ),
+          colorScheme: ColorScheme.fromSeed(seedColor: Colors.white),
+          disabledColor: AppColor.disableColor,
+          useMaterial3: false,
+          scaffoldBackgroundColor: Colors.white,
         ),
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.white),
-        disabledColor: AppColor.disableColor,
-        useMaterial3: false,
-        scaffoldBackgroundColor: Colors.white,
-      ),
-      debugShowCheckedModeBanner: false,
-      home: isNewUser ? const WelcomePage() : isAuthenticated ? const MyHomePage() : const LoginPage(),
-    );
+        debugShowCheckedModeBanner: false,
+        home: SplashScreen());
   }
 }
 
@@ -133,12 +116,14 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void loadData() async {
-    await Future.delayed(const Duration(seconds: 3));
+    await Future.delayed(const Duration(seconds: 5));
     await loadNews();
     await loadMatchs();
-    setState(() {
-      isLoading = false;
-    });
+    if (mounted) {
+      setState(() {
+        isLoading = false;
+      });
+    }
   }
 
   Future<void> loadNews() async {
@@ -192,7 +177,7 @@ class _MyHomePageState extends State<MyHomePage> {
         );
         break;
       case 2:
-       await UserService.logout();
+        await UserService.logout();
         if (context.mounted) {
           Navigator.pushAndRemoveUntil(
             context,
@@ -221,6 +206,7 @@ class _MyHomePageState extends State<MyHomePage> {
       body: CustomScrollView(
         slivers: [
           SliverAppBar(
+            automaticallyImplyLeading: false,
             title: const Text(
               "KingBet",
               style: TextStyle(
@@ -260,7 +246,10 @@ class _MyHomePageState extends State<MyHomePage> {
             child: Column(
               children: [
                 const SizedBox(height: 10.0),
-                isLoading ? HomeMatchSliderSkeleton(): HomeMatchSlider(height: height, width: width, matchs: matches)
+                isLoading
+                    ? HomeMatchSliderSkeleton()
+                    : HomeMatchSlider(
+                        height: height, width: width, matchs: matches)
               ],
             ),
           ),
@@ -320,10 +309,12 @@ class _MyHomePageState extends State<MyHomePage> {
                 ),
                 Container(
                   margin: const EdgeInsets.only(left: 10.0, right: 10.0),
-                  child: isLoading ? HomeNewsSliderSkeleton() : HomeNewsSlider(
-                      height: height,
-                      onSeeMoreLinkTaped: _onSeeMoreLinkTaped,
-                      news: news),
+                  child: isLoading
+                      ? HomeNewsSliderSkeleton()
+                      : HomeNewsSlider(
+                          height: height,
+                          onSeeMoreLinkTaped: _onSeeMoreLinkTaped,
+                          news: news),
                 )
               ],
             ),

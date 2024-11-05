@@ -3,13 +3,18 @@ import 'package:king_bet/models/transaction.dart';
 import 'package:king_bet/services/transaction.dart';
 import 'package:king_bet/views/success_transaction.dart';
 import 'package:webview_flutter/webview_flutter.dart';
+import 'dart:developer' as developer;
 
 class WebPayment extends StatefulWidget {
   final String transactionUrl;
   final int transactionId;
-  final Transaction transaction; 
+  final Transaction transaction;
 
-  const WebPayment({super.key, required this.transactionUrl, required this.transactionId, required this.transaction});
+  const WebPayment(
+      {super.key,
+      required this.transactionUrl,
+      required this.transactionId,
+      required this.transaction});
 
   @override
   State<WebPayment> createState() => _WebPaymentState();
@@ -21,6 +26,7 @@ class _WebPaymentState extends State<WebPayment> {
   @override
   void initState() {
     super.initState();
+    developer.log(widget.transactionUrl);
     controller = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
       ..setNavigationDelegate(
@@ -47,20 +53,23 @@ class _WebPaymentState extends State<WebPayment> {
   Future<void> _onStartDeposit() async {
     try {
       // Make the registration API call
-      final response = await TransactionService.makeOperation(widget.transaction);
+      final response =
+          await TransactionService.makeOperation(widget.transaction);
 
       if ((response.statusCode == 200) && mounted) {
         Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute(
-              builder: (context) =>
-                  SuccessTransactionPage(bookmaker: widget.transaction.bookmaker!)),
+              builder: (context) => SuccessTransactionPage(
+                  bookmaker: widget.transaction.bookmaker!)),
           (Route<dynamic> route) => false,
         );
       } else if (mounted) {
+        developer.log(response.body.toString());
         // Handle other statuses if necessary
       }
     } catch (error) {
+       developer.log(error.toString());
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -88,7 +97,9 @@ class _WebPaymentState extends State<WebPayment> {
         ),
         leading: IconButton(
           onPressed: () {
-            Navigator.pop(context);
+            if (mounted) {
+              Navigator.pop(context);
+            }
           },
           icon: Icon(
             Icons.arrow_back_ios,

@@ -26,9 +26,11 @@ class _AllNewsPageState extends State<AllNewsPage> {
 
   Future<void> loadNews() async {
     List<News> fetchedNews = await NewsService.getNews();
-    setState(() {
-      news = fetchedNews;
-    });
+    if(mounted) {
+      setState(() {
+        news = fetchedNews;
+      });
+    }
   }
 
   void _onBottomNavigationItemTapped(int index) {
@@ -120,7 +122,9 @@ class _AllNewsPageState extends State<AllNewsPage> {
           ),
           leading: IconButton(
             onPressed: () {
-              Navigator.pop(context);
+              if (mounted) {
+                Navigator.pop(context);
+              }
             },
             icon: const Icon(
               Icons.arrow_back_ios,
